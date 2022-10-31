@@ -153,13 +153,13 @@ We only need two source images. You can use your own but I'm not adjusting for s
 
 ```elixir
 # Adjust these to whatever images you want to use
-foreground_image = "/where/i/keep/stuff/dan.jpg"
-background_image = "/where/i/keep/stuff/valhalla.jpg"
+foreground_image = "/home/kevinedey/Code/Personal/AppSignal-1/dan.jpg"
+background_image = "/home/kevinedey/Code/Personal/AppSignal-1/valhalla.jpg"
 ```
 
 ## Evision - Cue Frickin' Lasers
 
-![Evision!](/home/kevinedey/Code/Personal/AppSignal-1/sharklaser.jpg)
+![Evision!](https://raw.githubusercontent.com/GenericJam/appsignal/main/sharklaser.jpg)
 
 <!-- livebook:{"break_markdown":true} -->
 
@@ -249,7 +249,7 @@ It would help if you're already familiar with Python, NumPy and friends as most 
 
 ## Let's Get Numerical!
 
-![Da Matrix!](/home/kevinedey/Code/Personal/AppSignal-1/matrix.jpg)
+![Da Matrix!](https://raw.githubusercontent.com/GenericJam/appsignal/main/matrix.jpg)
 
 <!-- livebook:{"break_markdown":true} -->
 
@@ -391,7 +391,7 @@ That's better! Now it's completely beleivable that Dan is dancing his heart out 
 
 ## Cold? Headache? Image Manipulation?
 
-![Vicks](vicks.jpg)
+![Vicks](https://raw.githubusercontent.com/GenericJam/appsignal/main/vicks.jpg)
 
 <!-- livebook:{"break_markdown":true} -->
 
@@ -626,5 +626,5 @@ If you already have some experience with doing these types of tasks in Python us
 
 ## I Now Return to My Yak
 
-![Yak](yak.jpg)
+![Yak](https://raw.githubusercontent.com/GenericJam/appsignal/main/yak.jpg)
 I hear you hypothetically saying... "You started with trying to create a chroma key filter for your video feed but you've just chroma keyed the same image over and over! Don't you know you're going to have to do this process like 30x a second with almost no latency?" Yes, imaginary incensed reader I will have to do something like that. So yes, Elixir in a loop calling Vix repeatedly is likely not going to cut the proverbial poptart. For the next stage I'm planning on bringing in Zig via Zigler to call vips which will all be masterminded by Elixir. Stay tuned for that adventure.
