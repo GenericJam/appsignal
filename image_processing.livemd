@@ -15,13 +15,17 @@ Mix.install([
 
 ... or her journey if you're a her and you're going on the _exact_ same journey... which would be weird because the work is already done.. you just have to [copy/paste](#you-promised-some-copy-paste?) now.
 
-If you're viewing the Livebook run the code with the play button at the top of each cell. If you don't you won't see the generated images and the article is going to be rather confusing. Also if you're new to Livebook, the first one to run is the cell above this text as that loads your dependencies.
+If you're viewing the Livebook run the code with the play button at the top of each cell. If you don't you won't see the generated images and the article is going to be rather confusing. Also if you're new to Livebook, the first one to run is the cell at the top of the page as that loads your dependencies.
 
 ## Dramatic Tension
 
 We've all been working from our bedrooms and broom closets for the past couple of years. Our employers realized having us work from home is cheaper than renting out office space so it appears the trend is here to stay. I decided to up my video presentation game with a green screen. In the days of Star Wars they needed the background screen to be green so they could remove it with analog methods. With modern digital processing you can trivially remove almost any color but it's useful if it's a color people are less likely to wear so green is still the traditional choice. These days it's also known as chroma key removal as it can be any range of colors.
 
-I tried [OBS](https://obsproject.com/) which worked _okaaay_ but it introduced a lag which unsynced my mouth and my voice which betrayed the fact I wasn't actually standing on the rings of Saturn. I tried wearing a space suit to try to sell it but it's so hard to type with those bulky gloves. After a short unsuccessful search looking for a ready made open source alternative I resolved to do what any self respecting programmer would do: write the chroma key remover myself!
+I tried [OBS](https://obsproject.com/) for background removal which worked _okaaay_ but it introduced a lag which unsynced my mouth and my voice which betrayed the fact I wasn't actually standing on the rings of Saturn. I tried wearing a space suit to try to sell it but it's so hard to type with those bulky gloves. After a short unsuccessful search looking for a ready made open source alternative I resolved to do what any self respecting programmer would do: write the chroma key remover myself!
+
+As you may know, video is actually just a series of pictures played fast enough to trick your brain into thinking it's seeing actual motion. A sensible first step is to figure out how to do this for one image which we could turn into one frame and then just do that 30 times a second. The only language I'm interested in using for any project is Elixir so that's where we'll start.
+
+This is just an arbitrary example that happens to work well for the three options I've chosen to showcase. Depending on what you're trying to do with image processing you may find different results.
 
 ## Elixir... for Images... ?
 
@@ -33,7 +37,7 @@ For the uninitiated, an image is just a large table (matrix, tensor or array whi
 
 ## A Simple Example
 
-I find it helpful to start off super basic. Let's look at a small image. This is the smallest image I can pretend is interesting. Can you guess what it is? This is the image in a table:
+I find it helpful to start off super basic. Let's look at a small image. This is the smallest image I can pretend is interesting. If you stare at it and blur your eyes a bit a certain shape may emerge. Can you guess what it is? This is the image in a table:
 
 | [r, g, b]       | [r, g, b]       | [r, g, b]       | [r, g, b]       | [r, g, b]       | [r, g, b]       | [r, g, b]       | [r, g, b]       |
 | --------------- | --------------- | --------------- | --------------- | --------------- | --------------- | --------------- | --------------- |
@@ -45,6 +49,10 @@ I find it helpful to start off super basic. Let's look at a small image. This is
 | [255, 255, 255] | [255, 255, 255] | [171, 0, 0]     | [230, 0, 0]     | [230, 0, 0]     | [171, 0, 0]     | [255, 255, 255] | [255, 255, 255] |
 | [255, 255, 255] | [255, 255, 255] | [255, 255, 255] | [171, 0, 0]     | [171, 0, 0]     | [255, 255, 255] | [255, 255, 255] | [255, 255, 255] |
 | [255, 255, 255] | [255, 255, 255] | [255, 255, 255] | [255, 255, 255] | [255, 255, 255] | [255, 255, 255] | [255, 255, 255] | [255, 255, 255] |
+
+<!-- livebook:{"break_markdown":true} -->
+
+This is the same image as above in Elixir code. If you copied and pasted it into Livebook it would display the image afterward as you see below.
 
 ```elixir
 # The image as code
@@ -163,11 +171,13 @@ background_image = "/home/kevinedey/Code/Personal/AppSignal-1/valhalla.jpg"
 
 <!-- livebook:{"break_markdown":true} -->
 
-Like I said my first instinct was to use Nx but then I hit a bit of a roadblock as Nx operates on the whole matrix at once and it broke my brain a bit. `Enum.map/2` has abandoned me in my time of need. [Paulo Valente](https://github.com/polvalente) on Elixir Slack informed I could probably do everything with [Evision](https://hexdocs.pm/evision/Evision.html) which is a new library that has bindings to [OpenCV](https://opencv.org/) which stands for 'Open Source Computer Vision Library'. It has been a standard go to library for 'out of the box' functionality which is very useful if you just want to use the algorithms but you don't care much how they work. It's written primarily in C++ with it's main set of bindings in Python. It's been in use for several years and is quite stable yet as far as I know. Its main purpose is research so I would caution against using it in your production server. It's implemented using NIFs which makes it fast... however the eternal caveat with NIFs is if they crash, it very well may take your BEAM with it. If your system is keeping grandpa alive, don't slice and dice images with that same server.
-
-So yeah, all this nifty stuff is built into OpenCV because when the robots take over the world they need to know how to see stuff. The may not be able to turn door knobs yet but thanks to us they can recognize thousands of faces per second. That means they're _very_ friendly.
+I started with [Evision](https://hexdocs.pm/evision/Evision.html) because it seemed like it would be easiest. Evision is a new library that has bindings to [OpenCV](https://opencv.org/) which stands for 'Open Source Computer Vision Library'. It has been a standard go to library for 'out of the box' functionality for [computer vision](https://en.wikipedia.org/wiki/Computer_vision) which is very useful if you just want to use the algorithms but you don't care much how they work. It's written primarily in C++ with it's main set of bindings in Python. It's been in use for several years and is quite stable as far as I know. Its main purpose is research so I would caution against using it in your production server. Evision is implemented using NIFs which tie directly to OpenCV which makes it fast... however the eternal caveat with NIFs is if they crash, it very well may take your BEAM with it. If your system is keeping grandpa alive, don't slice and dice images with that same server.
 
 Evision comes with a prebuilt binary of the OpenCV dependency which may take a while to download but in my experience worked great. If you're running the Livebook this should already be done by now.
+
+<!-- livebook:{"break_markdown":true} -->
+
+This code lets us load images inline in Livebook as we generate them.
 
 ```elixir
 # Just a convenience module to inline images
@@ -186,7 +196,7 @@ defmodule ShowMeTheEvision do
 end
 ```
 
-This fine looking lad will stand in for me.
+This fine looking lad will stand in for me. Let's call him Dancing Dan. He's just happy to be here.
 
 ```elixir
 fore = Evision.imread(foreground_image)
@@ -200,6 +210,8 @@ back = Evision.imread(background_image)
 ShowMeTheEvision.show(back)
 ```
 
+Here we set up the range of what we are using for the lower bound and upper bound values of green we'll accept for removal.
+
 ```elixir
 # Set the lower bound value to accept as green
 l_green =
@@ -210,11 +222,17 @@ l_green =
 u_green =
   [100, 255, 80]
   |> Nx.tensor(type: {:u, 8})
+```
 
+Evision has kindly given us access to a prebuilt function in OpenCV for this use case of generating a mask from a range.
+
+```elixir
 # Automagically generate the mask of what goes where based on the bounds
 mask = Evision.inRange(fore, Evision.Mat.from_nx(l_green), Evision.Mat.from_nx(u_green))
 ShowMeTheEvision.show(mask)
 ```
+
+Now the mask is applied to the foreground image to clip Dan out. You may notice a green hue. We'll talk about that later.
 
 ```elixir
 # Dancing Dan is clipped out... but notice the green hue.
@@ -222,16 +240,26 @@ masked = Evision.Mat.setTo(fore, 0, mask)
 ShowMeTheEvision.show(masked)
 ```
 
+Now we want to invert the mask so we can clip out the background to avoid conflicts when we merge the two images.
+
 ```elixir
 inverted_mask =
   Evision.Mat.full(Evision.Mat.shape(mask), 255, Evision.Mat.type(mask))
   |> Evision.Mat.setTo(0, mask)
 
+ShowMeTheEvision.show(inverted_mask)
+```
+
+When we apply the mask to the background it makes a hole the size of Dancing Dan.
+
+```elixir
 masked_background = Evision.Mat.setTo(back, 0, inverted_mask)
 
 # There's a hole in my soul for a Dancing Dan
 ShowMeTheEvision.show(masked_background)
 ```
+
+We use `bitwise_or` to combine the two images.
 
 ```elixir
 result = Evision.Mat.bitwise_or(masked, masked_background)
@@ -239,13 +267,13 @@ result = Evision.Mat.bitwise_or(masked, masked_background)
 ShowMeTheEvision.show(result)
 ```
 
-My overall experience with Evision was good but it was a bit unstable and crashed several times during development. I was working with `0.1.9` and it's up to `0.1.16` now. I'm not sure what part in the chain was crashing. Perhaps that's been fixed now.
+My overall experience with Evision was good but it was a bit unstable and crashed several times during development. I was working with `0.1.9` and it's up to `0.1.18` now. I'm not sure what part in the chain was crashing. Perhaps that's been fixed now.
 
-The documentation for Evision is quite sparse but the code, as far as I understand, is autogenerated from OpenCV source so the library is quite massive and filling out the documentation will take some time I think. The documentation is acceptable but not stellar. The OpenCV documentation is not particularly generous either so expect a fair amount of trial and error.
+The documentation for Evision is quite sparse but the code, as far as I understand, is autogenerated from the OpenCV source so the library is quite massive and filling out the documentation will take some time I suspect. The documentation is acceptable but not stellar. The OpenCV documentation is not particularly generous either so expect a fair amount of trial and error.
 
-If I wanted to do some computer vision task Evision would be the first place I'd look. If I wanted to do image manipulation, it has the capability but that's not what it's good at and I wouldn't find the tradeoff of stability worth it.
+If I wanted to do some computer vision task Evision would be the first place I'd look. If I wanted to do image manipulation, it has the capability but that's not what it's good at and I wouldn't find the tradeoff of stability worth it to put it into production. It's perfectly acceptable for weekend hack projects though.
 
-It would help if you're already familiar with Python, NumPy and friends as most of the examples out there are in Python. Between Evision and OpenCV docs and Python examples, you'll likely find what you're looking for. Evision is the most 'plug and play' library in this article. For the most part, you tell it what to do. I didn't encounter any gotchas, apart from the aforementioned crashes.
+It would help if you're already familiar with Python, NumPy and friends as most of the examples out there are in Python. Between Evision and OpenCV docs and Python examples, you'll likely find what you're looking for. Evision is the most 'plug and play' library in this article. For the most part, you tell it what to do and it does it and it feels relatively straightforward. I didn't encounter any gotchas, apart from the aforementioned crashes.
 
 ## Let's Get Numerical!
 
@@ -253,11 +281,19 @@ It would help if you're already familiar with Python, NumPy and friends as most 
 
 <!-- livebook:{"break_markdown":true} -->
 
-I returned to Slack with my finished code and asked if there were any improvements I could make. I mentioned I found Evision to be a bit crashy. Paulo Valente, seeing my finished code said I could probably just use [Nx](https://hexdocs.pm/nx/Nx.html) and not use Evision at all. Also it did feel a bit wasteful if I was bringing in a rather large dependency like OpenCV just to barely use it.
+I returned to Slack with my finished code and asked if there were any improvements I could make. I mentioned I found Evision to be a bit crashy. [Paulo Valente](https://github.com/polvalente), seeing my finished code said I could probably just use [Nx](https://hexdocs.pm/nx/Nx.html) and not use Evision at all. Also it did feel a bit wasteful that I was bringing in a rather large dependency like OpenCV just to barely use it.
 
-Nx was a bit of a head scratcher. I had to revisit some parts of my brain I'd paid little attention to since college. The main resource I used for learnig Nx was [Sean Moriarty's site](https://seanmoriarity.com/), specifically the 'Nx Tip of the Week' posts. I would highly recommend reading all of these as an Nx basic operotions manual. If you're already familiar with NumPy, tensors or current AI wrangling much of this will already make sense to you.
+Nx was a bit of a head scratcher. I had to revisit some parts of my brain I'd paid little attention to since college. The main resource I used for learnig Nx was [Sean Moriarty's site](https://seanmoriarity.com/), specifically the 'Nx Tip of the Week' posts. I would highly recommend reading all of these as an Nx basic operations manual. If you're already familiar with NumPy, tensors or current AI wrangling much of this will already make sense to you.
 
-In Elixir we're used to dealing with things in parallel, but Nx takes that to the next level as ideally you are using operations that are acting on the whole matrix _at the same time_. This is because Nx is, if possible, offloading the calculations to the GPU.
+In Elixir we're used to dealing with things in parallel, but Nx takes that to the next level as ideally you are using operations that are acting on the whole matrix _at the same time_. This is because Nx is, if possible, offloading the calculations to the GPU. In Elixir, we would normally see a matrix (tensor) as a list so you'd normally reach for something like `Enum.map/2` or `Enum.reduce/2` but that's not how Nx works _at all_. GPU operations happen in parallel to each other so they all happen at the same time, not one after the other.
+
+This is the type of mental adjustment you'll need to make to execute operations in Nx.
+
+<!-- livebook:{"break_markdown":true} -->
+
+Here's the convenience module to display the images.
+
+`ShowMeTheNx.show_mask/1` is being a bit tricky as it takes a tensor of all `0`s and `1`s and amps the `1`s to `255`s so they show up as full value. If we tried to show without amping them up you might see the difference in a coal mine but nowhere else as they are only off by 1 it's basically impossible to see. Try changing the values in that function to see what happens if you're interested in experimentation.
 
 ```elixir
 # Just a convenience module to inline images
@@ -281,6 +317,8 @@ defmodule ShowMeTheNx do
 end
 ```
 
+Load and display the foreground image.
+
 ```elixir
 # This one's a bit more fiddly - it's not really intended to be an image lib
 {:ok, fore_buffer} = File.read(foreground_image)
@@ -292,6 +330,8 @@ fore_tensor = StbImage.to_nx(fore)
 ShowMeTheNx.show(fore_tensor)
 ```
 
+Load and display the background.
+
 ```elixir
 {:ok, back_buffer} = File.read(background_image)
 {:ok, back} = StbImage.read_binary(back_buffer)
@@ -299,11 +339,15 @@ back_tensor = StbImage.to_nx(back)
 ShowMeTheNx.show(back_tensor)
 ```
 
+Define and display the lower bound green. Any green between this and the upper bound is selected for removal.
+
 ```elixir
 # Lower bound green
 l_green = Nx.broadcast(Nx.tensor([0, 100, 0], type: {:u, 8}), fore_tensor)
 ShowMeTheNx.show(l_green)
 ```
+
+The upper bound green.
 
 ```elixir
 # Upper bound green
@@ -311,9 +355,7 @@ u_green = Nx.broadcast(Nx.tensor([100, 255, 95], type: {:u, 8}), fore_tensor)
 ShowMeTheNx.show(u_green)
 ```
 
-How many values fall outside the bounds of lower bound and upper bound green? This is initially calculated on `[r, g, b]` sub pixel basis. In the next step we add the two together. Then we logical and across each whole pixel (`[r, g, b]`) to see which ones are all true. That gives us our black and white mask in the fourth image.
-
-`ShowMeTheNx.show_mask/1` is being a bit tricky as it takes a tensor of all `0`s and `1`s and amps the `1`s to `255`s so they show up as full value. If we tried to show without amping them up you might see the difference in a coal mine but nowhere else as they are only off by 1 it's basically impossible to see. Try changing the values in that function to see what happens.
+This tells us all of the sub pixel values that are less than the lower bound green. This is half of Dan.
 
 ```elixir
 # Pixels with any values that fall below the green threshold
@@ -321,17 +363,23 @@ less_than_equal = Nx.less_equal(l_green, fore_tensor)
 ShowMeTheNx.show_mask(less_than_equal)
 ```
 
+This tells us all of the sub pixel values that are more than the upper bound green. This is the other half of Dan.
+
 ```elixir
 # Pixels with any values that fall above the green threshold
 greater_than_equal = Nx.greater_equal(u_green, fore_tensor)
 ShowMeTheNx.show_mask(greater_than_equal)
 ```
 
+How many values fall outside the bounds of lower bound and upper bound green? This is initially calculated on `[r, g, b]` sub pixel basis. In the next step we add the two together. Then we logical and across each whole pixel (`[r, g, b]`) to see which ones are all true. That gives us our black and white mask in the fourth image.
+
 ```elixir
 # Now we combine them for a more complete picture
 color_fore_mask = Nx.logical_and(less_than_equal, greater_than_equal)
 ShowMeTheNx.show_mask(color_fore_mask)
 ```
+
+Now we take all of these partial values and crank them to `255` for every pixel that has some value above zero. So our mask is made up of exclusively `[0, 0, 0]` (black) and `[255, 255, 255]` (white) pixels.
 
 ```elixir
 # Now we only keep those that have 1 in all three [r,g.b] for each pixel
@@ -343,6 +391,8 @@ fore_mask =
 
 ShowMeTheNx.show_mask(fore_mask)
 ```
+
+Now we combine the foreground and the background using the mask to determine, pixel by pixel, which image to include in the composite.
 
 ```elixir
 # We use the mask as a ternary operator on a pixel by pixel basis
@@ -356,14 +406,16 @@ ShowMeTheNx.show(composite)
 "But wait!", I hear you say. "What about that hideous green glow that clings to Dancing Dan?"
 Let's try to do something about that.
 
-Here are all the previous steps combined called 'erosion'. This is where we take off the outer layer(s) of pixel(s) from the clipped image. If you wanted to tune this for your own purposes you could make the `{3, 3}` window `{5, 5}` to take out 2 layers of pixels and adjust the placement below it.
+Here are all the previous steps combined with a subtle difference. For this technique we take off the outer layer(s) of pixel(s) from the clipped image. If you wanted to tune this for your own purposes you could make the `{3, 3}` window `{5, 5}` to take out 2 layers of pixels and adjust the placement below it.
+
+By stripping off the outer layer of pixels we get rid of the ones that are 'not green enough' to fit in our range. They stil look green so if we just get rid of that layer of pixels it will make it look like a clean clip.
 
 ```elixir
 fore_mask =
   Nx.logical_and(Nx.less_equal(l_green, fore_tensor), Nx.greater_equal(u_green, fore_tensor))
   |> Nx.all(axes: [:channels])
 
-eroded =
+clipped =
   fore_mask
   # Here we use a window function
   # It performs this on every item (pixel) at once
@@ -371,23 +423,25 @@ eroded =
   # This way it erodes the white mask (0s) by 1 pixel
   |> Nx.window_max({3, 3})
 
-# eroded is now 2x2 pixels smaller 
+# clipped is now 2x2 pixels smaller 
 
-eroded_fore_mask =
+clipped_fore_mask =
   fore_mask
-  # we have to put the eroded mask on top of the previous mask offset by 1 each way 
+  # we have to put the clipped mask on top of the previous mask offset by 1 each way 
   # so it ends up centred
-  |> Nx.put_slice([1, 1], eroded)
+  |> Nx.put_slice([1, 1], clipped)
   #  Broadcast back out to size of pixel tensor
   |> Nx.broadcast({360, 640, 3}, axes: [:height, :width], names: [:height, :width, :channels])
 
 # Combine backgroundand foreground following the mask
-composite = Nx.select(eroded_fore_mask, back_tensor, fore_tensor)
+composite = Nx.select(clipped_fore_mask, back_tensor, fore_tensor)
 
 ShowMeTheNx.show(composite)
 ```
 
 That's better! Now it's completely beleivable that Dan is dancing his heart out in the middle of an idyllic field.
+
+Overall, Nx is not designed to be used for images. However, it is utilising the GPU which is designed to be used with images. There may be an opportunity to build a 'native' Elixir solution for image manipulation. That would be cool. However, Nx itself is not generally ergonomic for the task as it has no knowledge of images and no special handling of images. If you understand that you're working on matrices of numbers and you're happy with that approach it may work fine for you for some image manipulation tasks.
 
 ## Cold? Headache? Image Manipulation?
 
@@ -397,13 +451,15 @@ That's better! Now it's completely beleivable that Dan is dancing his heart out 
 
 There are three very reasonable options for this in Elixir and I wanted to try them all. The last one is using the [Image](https://hexdocs.pm/image/readme.html) library in combination with [Vix](https://hexdocs.pm/vix/readme.html) which is a set of bindings for [libvips](https://www.libvips.org/) which is a library for processing images using vips. It basically competes with imagemagick/graphicsmagick. It's a very good library with a very involved and attentive author that answered my [question](https://github.com/libvips/libvips/discussions/3097#discussioncomment-3892994) within 24 hours on a Sunday.
 
-Vix is similar to Evision in that they are a set of bindings around an already good library. As far as I know Vix gives full access to everything that libvips has to offer. It is not as vast as Evision/OpenCV but what is there is very solid. If I was putting image manipulation into a production code base this would probably be my choice.
+Vix is similar to Evision in that they are a set of bindings around an already good library. As far as I know Vix gives full access to everything that libvips has to offer. It is not as vast in functions and functionality as Evision/OpenCV but what is there is very solid. If I was putting image manipulation into a production code base this would probably be my choice.
 
-However, due to its very optimised way of running it can take a bit to get into the mindset of the way the library works. If you're trying to do images serially like batch processing thumbnails in a single queue, you're unlikely to run into some of the issues I did. It's tempting to think of each 'image' you're working on as a akin to a layer in Photoshop but it's not quite that simple. Part of this mindset is thinking like a graphic artists. You don't really want to use masks like we did with Nx. If you're using it like it expects, you'll use an alpha channel and set the clipped image to have a transparent background.
+However, due to its very optimised way of running it can take a bit to get into the mindset of the way the library works. If you're trying to do images serially like batch processing thumbnails in a single queue, you're unlikely to run into some of the issues I did. It's tempting to think of each 'image' you're working on as a akin to a layer in Photoshop but it's not quite that simple. Part of this mindset is thinking like graphic artists. You don't really want to use masks like we did with Nx. If you're using it like it expects, you'll use an alpha channel and set the clipped image to have a transparent background.
 
-Another thing to note is you need to [install vips](https://www.libvips.org/install.html) on your machine independently whereas Evision just downloads its own binary and does the magic for you which is quite nice.
+You need to [install vips](https://www.libvips.org/install.html) on your machine independently whereas Evision just downloads its own binary and does the magic for you which is quite nice.
 
-Another thing to keep in mind is that `Vix.Vips.Image` and `Image` are different things in this context. `Image` is the library that wraps `Vix` and an actual image in `Vix` and `Image` is `%Vix.Vips.Image{}`. It's a bit of a hall of mirrors but it's really not that bad once you understand the relationship. `%Vix.Vips.Image{}` also represents an image in vips which usually means you read it from a file and vips created a pipeline for it so it can also be thought of as the pipeline for processing that image.
+Something that I found a bit confusing in this instance is what 'image' means. `Image` is the name of the library that wraps `Vix`. `Vix` has a submodule called `Vix.Vips.Image` with the corresponding struct `%Vix.Vips.Image{}` which represents an image in vips. It's possibly more accurate to think of this as an image pipeline that gets created when you open the image. You could also think of it as the image memory as it is using mutability to mutate the image in place.
+
+This is another mindset adjustment to make for Elixir programmers as it is using mutability as much as possible for performance reasons. It's best to understand that you're operating on the vips image pipeline with Elixir shaped handles. It doesn't obey Elixir conventions.
 
 ## Livebook App Caveat
 
@@ -412,18 +468,24 @@ If vips/Vix is not working for you on a Mac using the standalone app you may nee
 1. [Get the nightly build](https://livebook.dev/releases/nightly/LivebookInstall-nightly-macos-universal.dmg)
 2. Add an environment variable, under settings, to any tool chain required. In testing it needed `/usr/local/bin`. Livebook is smart enough to know to append it to the current env variable.
 
-Thanks to Kip Cole for testing.
+Thanks to [Kip Cole](https://github.com/kipcole9) for testing on Mac.
 
 It has been tested in Windows and it works for at least one user:
 
 1. Have libvips-dev installed so vips is available via system command
 2. Make sure Livebook can call vips, so it needs to be on the PATH and Livebook needs to see the PATH
 
+Thanks to [Lucas San Román](https://github.com/doorgan) for testing on Windows using WSL2.
+
 I have tested on Debian Linux and it worked just by installing libvips-dev with:
 
 ```
 sudo apt install libvips-dev
 ```
+
+<!-- livebook:{"break_markdown":true} -->
+
+Here's the same inline image module adapted to `Vix` so we can show the images inline as we write them.
 
 ```elixir
 defmodule ShowMeTheVix do
@@ -446,12 +508,20 @@ change how you're opening the file to `access: :random` as the second argument.
 
 In general be aware that how you open an image affects the rest of the behaviour of the image as you process it.
 
+I believe `Image` now opens an image with `access: :random` by default.
+
+This may be extraneous to most people but there are [various ways to open an image](https://www.libvips.org/API/current/How-it-opens-files.html) in vips that will impact how it will be processed. The direct access method which is the default for vips did not work for me as it only opens one pipeline but I needed two as I'm trying to composite two images.
+
+<!-- livebook:{"break_markdown":true} -->
+
+Once again, load and display the foreground image.
+
 ```elixir
-# If you don't open it with access: :sequential it creates problems later as it
-# only creates one pipeline but this method needs two 
 {:ok, fore} = Image.open(foreground_image, access: :random)
 ShowMeTheVix.show(fore)
 ```
+
+Loading the background.
 
 ```elixir
 {:ok, back} = Image.open(background_image, access: :random)
@@ -459,11 +529,15 @@ ShowMeTheVix.show(fore)
 ShowMeTheVix.show(back)
 ```
 
+Since variety is the spice of life we can take the opposite approach as we did with the Nx version we select and show the values that are above the lower threshold.
+
 ```elixir
 # Lower bound green
 {:ok, l_green} = Image.Math.greater_than(fore, [0.0, 100.0, 0.0])
 ShowMeTheVix.show(l_green)
 ```
+
+All the values that are below the upper threshold.
 
 ```elixir
 # Upper bound green
@@ -471,25 +545,25 @@ ShowMeTheVix.show(l_green)
 ShowMeTheVix.show(u_green)
 ```
 
+Now we mash the two together to create what will become the mask.
+
 ```elixir
 # Combining the upper and lower bounds
 {:ok, color_fore_mask} = Image.Math.boolean_and(l_green, u_green)
 ShowMeTheVix.show(color_fore_mask)
 ```
 
+Now we polarize all the values as in previous examples.
+
 ```elixir
 # We're trying to create a boolean mask 
 # vips uses this term of 'band' a lot to refer to r, g, b or a 
-# Similar to the Nx example I want to and across all of r,g,b per pixel
+# Similar to the Nx example I want to 'and' across all of r,g,b per pixel
 {:ok, fore_mask} = Vix.Vips.Operation.bandbool(color_fore_mask, :VIPS_OPERATION_BOOLEAN_AND)
 ShowMeTheVix.show(fore_mask)
 ```
 
-```elixir
-# Clip out Dan the Man
-{:ok, masked} = Image.Math.subtract(fore, fore_mask)
-ShowMeTheVix.show(masked)
-```
+As before, we'll need an inverted mask.
 
 ```elixir
 # Invert the mask to clip the background
@@ -497,11 +571,23 @@ ShowMeTheVix.show(masked)
 ShowMeTheVix.show(inverted_fore_mask)
 ```
 
+Apply the mask to the foreground.
+
+```elixir
+# Clip out Dan the Man
+{:ok, masked} = Image.Math.subtract(fore, fore_mask)
+ShowMeTheVix.show(masked)
+```
+
+Apply the mask to the background.
+
 ```elixir
 # There's a Dan sized hole
 {:ok, masked_back} = Image.Math.subtract(back, inverted_fore_mask)
 ShowMeTheVix.show(masked_back)
 ```
+
+Then, as before we can combine them. However, there are some indications that we're imposing a foreign mindset on vips. We're forcing it to create a copy which it doesn't want to do. Nonetheless, this way works but there must be a better way.
 
 ```elixir
 # There are lots of indications that we're doing something wrong
@@ -523,6 +609,11 @@ ShowMeTheVix.show(comp)
 ```
 
 We're getting close to the way you should actually perform this task. Thanks for sticking it out on our learning adventure. :rainbow:
+
+<!-- livebook:{"break_markdown":true} -->
+
+Next up, we have a far more native vips implementation. Instead of using the mask to turn the part of the image we don't want black, we just turn it transparent using the alpha channel.
+If you want to prove it to yourself, copy paste the below image into an editor and you can see the area around Dan is transparent.
 
 ```elixir
 # Using this method only requires one pipeline so no special args needed
@@ -548,8 +639,11 @@ We're getting close to the way you should actually perform this task. Thanks for
 # Also as bandjoin is creating an alpha layer and using the mask to determine what should 
 # be transparent so there's no need to clip the background
 {:ok, masked_person} = Vix.Vips.Operation.bandjoin([fore, inverted_fore_mask])
+
 ShowMeTheVix.show(masked_person)
 ```
+
+Now you can just paste the partially transparent version of Dan onto the background which doesn't need to be cut out because vips does sensible things when you put a transparent image on top of another one.
 
 ```elixir
 # compose mashes the two images together and because it's a lib that's designed for images
@@ -563,6 +657,10 @@ ShowMeTheVix.show(comp)
 
 I was discussing various aspects with the author of Image, [Kip Cole](https://github.com/kipcole9). He was helping me out with these various formulations and tribulations so he just built it into his library.
 
+<!-- livebook:{"break_markdown":true} -->
+
+All the previous steps are now built into one function call.
+
 ```elixir
 {:ok, fore} = Image.open(foreground_image, access: :random)
 
@@ -575,6 +673,8 @@ I was discussing various aspects with the author of Image, [Kip Cole](https://gi
 ShowMeTheVix.show(clipped)
 ```
 
+Or you can use an alternative strategy of picking a median color and a threshold which takes all the values up and down of that median.
+
 ```elixir
 # Alternative strategy
 {:ok, clipped} =
@@ -586,12 +686,16 @@ ShowMeTheVix.show(clipped)
 ShowMeTheVix.show(clipped)
 ```
 
+Or you can do next to nothing and just let the library figure it out for you.
+
 ```elixir
 # Or you can let it guess everything including the background
 {:ok, clipped} = Image.chroma_key(fore)
 
 ShowMeTheVix.show(clipped)
 ```
+
+Use one of the above in combination with `compose` which composites it onto the background.
 
 ```elixir
 # Pick the one you like and mash it together with compose
